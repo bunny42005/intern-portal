@@ -10,7 +10,7 @@ import Profile from "./pages/Profile";
 // Reusable wrapper with background only (no navbar)
 const WithBackground = ({ children }) => (
   <div className="min-h-screen bg-[url('/study-bg.png')] bg-cover bg-center bg-no-repeat">
-    <div className="bg-white/70 min-h-screen ">
+    <div className="bg-white/70 min-h-screen">
       <main className="flex justify-center items-center min-h-screen p-4">
         {children}
       </main>
@@ -23,7 +23,9 @@ const WithNavbar = ({ children }) => (
   <div className="min-h-screen bg-[url('/study-bg.png')] bg-cover bg-center bg-no-repeat">
     <div className="bg-white/70 min-h-screen backdrop-blur-md">
       <Navbar />
-      <main className="p-4">{children}</main>
+      <main className="p-4 space-y-6 max-w-6xl mx-auto">
+        {children}
+      </main>
     </div>
   </div>
 );
@@ -38,7 +40,6 @@ function App() {
         <Route path="/leaderboard" element={<WithNavbar><Leaderboard /></WithNavbar>} />
         <Route path="/analytics" element={<WithNavbar><Analytics /></WithNavbar>} /> 
         <Route path="/profile" element={<WithNavbar><Profile /></WithNavbar>} />
-
       </Routes>
     </Router>
   );
