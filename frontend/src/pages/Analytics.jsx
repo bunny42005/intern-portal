@@ -3,7 +3,6 @@ import { Chart, PieController, ArcElement, Tooltip, Legend } from "chart.js";
 
 Chart.register(PieController, ArcElement, Tooltip, Legend);
 
-
 const Analytics = () => {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,7 +18,6 @@ const Analytics = () => {
 
         // Render pie chart
         if (chartRef.current) {
- {
           const ctx = chartRef.current.getContext("2d");
 
           // Destroy old chart if exists
@@ -102,13 +100,12 @@ const Analytics = () => {
       </div>
 
       {/* Pie Chart */}
-      <div className="mt-5 flex justify-center">
-        <div className="w-60h-60">
-            <h3 className="text-lg font-semibold text-center mb-2">📈 Activity Breakdown</h3>
-            <canvas ref={chartRef} width={200} height={200} className="mx-auto" />
-
-            </div>
-            </div>
+      <div className="mt-5 flex flex-col items-center">
+        <h3 className="text-lg font-semibold text-center mb-2">📈 Activity Breakdown</h3>
+        <div className="w-60 h-60">
+          <canvas ref={chartRef} width={240} height={240} />
+        </div>
+      </div>
     </div>
   );
 };
