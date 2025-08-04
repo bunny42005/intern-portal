@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
@@ -40,7 +40,7 @@ app.post('/api/analytics/update', (req, res) => {
   const updatedStats = req.body;
   console.log('📩 Received update:', updatedStats);
 
-  // You could save to a database here in future
+  // Future database logic can go here
   res.status(200).json({ message: '📊 Stats updated successfully' });
 });
 
