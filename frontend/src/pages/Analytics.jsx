@@ -15,43 +15,6 @@ const Analytics = () => {
       .then((data) => {
         setAnalyticsData(data);
         setLoading(false);
-
-        // Render pie chart
-        if (chartRef.current) {
-          const ctx = chartRef.current.getContext("2d");
-
-          // Destroy old chart if exists
-          if (chartInstanceRef.current) {
-            chartInstanceRef.current.destroy();
-          }
-
-          chartInstanceRef.current = new Chart(ctx, {
-            type: "pie",
-            data: {
-              labels: ["Tasks", "Time Spent", "Points"],
-              datasets: [
-                {
-                  label: "Analytics Summary",
-                  data: [
-                    data.tasksCompleted,
-                    Math.floor(data.timeSpent / 60),
-                    data.leaderboardPoints,
-                  ],
-                  backgroundColor: ["#60A5FA", "#34D399", "#FBBF24"],
-                  borderWidth: 1,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              plugins: {
-                legend: {
-                  position: "bottom",
-                },
-              },
-            },
-          });
-        }
       })
       .catch((err) => {
         console.error("Error fetching analytics:", err);
@@ -59,13 +22,60 @@ const Analytics = () => {
       });
   }, []);
 
-  if (loading) return <div className="text-center">Loading analytics...</div>;
+  useEffect(() => {
+    if (!analyticsData || !chartRef.current) return;
+
+    const ctx = chartRef.current.getContext("2d");
+
+    // Destroy previous chart if exists
+    if (chartInstanceRef.current) {
+      chartInstanceRef.current.destroy();
+    }
+
+    // Create new chart
+    chartInstanceRef.current = new Chart(ctx, {
+      type: "pie",
+      data: {
+        labels: ["Tasks", "Time Spent", "Points"],
+        datasets: [
+          {
+            label: "Analytics Summary",
+            data: [
+              analyticsData.tasksCompleted,
+              Math.floor(analyticsData.timeSpent / 60),
+              analyticsData.leaderboardPoints,
+            ],
+            backgroundColor: ["#60A5FA", "#34D399", "#FBBF24"],
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: "bottom",
+          },
+        },
+      },
+    });
+
+    // Cleanup on unmount
+    return () => {
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.destroy();
+      }
+    };
+  }, [analyticsData]);
+
+  if (loading) return <div className="text-center py-6">Loading analytics...</div>;
+  if (!analyticsData) return <div className="text-center py-6">No analytics data available.</div>;
 
   return (
     <div className="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg space-y-6">
       <h2 className="text-2xl font-bold text-center mb-4">📊 Analytics Overview</h2>
 
-      {/* Analytics Cards */}
+      {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
         <div className="bg-blue-100 rounded-lg p-4 shadow">
           <div className="text-sm">Tasks Completed</div>
@@ -91,8 +101,8 @@ const Analytics = () => {
 
       {/* Login History */}
       <div className="bg-gray-100 rounded-lg p-4 shadow">
-        <div className="text-sm mb-1">Login History</div>
-        <ul className="text-xs space-y-1">
+        <div className="text-sm mb-1 font-medium">Login History</div>
+        <ul className="text-xs space-y-1 max-h-32 overflow-y-auto">
           {analyticsData.loginHistory.map((date, index) => (
             <li key={index}>🗓️ {date}</li>
           ))}
@@ -103,7 +113,7 @@ const Analytics = () => {
       <div className="mt-5 flex flex-col items-center">
         <h3 className="text-lg font-semibold text-center mb-2">📈 Activity Breakdown</h3>
         <div className="w-60 h-60">
-          <canvas ref={chartRef} width={240} height={240} />
+          <canvas ref={chartRef} width={240} height={240}></canvas>
         </div>
       </div>
     </div>
