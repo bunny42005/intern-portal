@@ -1,102 +1,108 @@
-import React from "react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
+import { useEffect, useState, useRef } from "react";
 
 const Analytics = () => {
-  // Mock Data (replace with API later)
-  const stats = {
-    completed: 28,
-    pending: 7,
-    totalTasks: 35,
-    xp: 1450,
-    level: "Level 2",
-    rewards: ["Bronze Badge", "Consistent Streak", "Early Bird"],
-    nextReward: "Silver Badge",
-    nextRewardIn: 5, // tasks remaining to unlock next reward
-  };
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const chartRef = useRef(null);
+  const chartInstanceRef = useRef(null);
 
-  const completionRate = Math.round((stats.completed / stats.totalTasks) * 100);
+  useEffect(() => {
+    fetch("https://intern-portal-backend-y3wl.onrender.com/api/analytics")
+      .then((res) => res.json())
+      .then((data) => {
+        setAnalyticsData(data);
+        setLoading(false);
 
-  const pieData = [
-    { name: "Completed", value: stats.completed },
-    { name: "Pending", value: stats.pending },
-  ];
+        // Render pie chart
+        if (chartRef.current && window.Chart) {
+          const ctx = chartRef.current.getContext("2d");
 
-  const COLORS = ["#4CAF50", "#F59E0B"]; // Green and Orange
+          // Destroy old chart if exists
+          if (chartInstanceRef.current) {
+            chartInstanceRef.current.destroy();
+          }
+
+          chartInstanceRef.current = new window.Chart(ctx, {
+            type: "pie",
+            data: {
+              labels: ["Tasks", "Time Spent", "Points"],
+              datasets: [
+                {
+                  label: "Analytics Summary",
+                  data: [
+                    data.tasksCompleted,
+                    Math.floor(data.timeSpent / 60),
+                    data.leaderboardPoints,
+                  ],
+                  backgroundColor: ["#60A5FA", "#34D399", "#FBBF24"],
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                },
+              },
+            },
+          });
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching analytics:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div className="text-center">Loading analytics...</div>;
 
   return (
-    <div className="min-h-screen bg-[url('/study-bg.png')] bg-cover bg-center bg-no-repeat py-10 px-4">
-      <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-xl max-w-6xl mx-auto p-8">
-        <h1 className="text-3xl font-bold text-center text-indigo-700 mb-8">
-          🎯 Intern Portal Analytics Dashboard
-        </h1>
+    <div className="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg space-y-6">
+      <h2 className="text-2xl font-bold text-center mb-4">📊 Analytics Overview</h2>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Pie Chart */}
-          <div className="w-full lg:w-2/3 h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={120}
-                  label
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend verticalAlign="bottom" />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Stats Summary */}
-          <div className="w-full lg:w-1/3 flex flex-col gap-4 text-gray-800">
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="font-semibold text-lg text-indigo-600">📊 Summary</p>
-              <p>✅ <strong>Completed:</strong> {stats.completed}</p>
-              <p>⏳ <strong>Pending:</strong> {stats.pending}</p>
-              <p>📋 <strong>Total Tasks:</strong> {stats.totalTasks}</p>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="font-semibold text-lg text-indigo-600">🏅 Rewards & Progress</p>
-              <p>🎖️ <strong>Rewards Won:</strong> {stats.rewards.join(", ")}</p>
-              <p>🎯 <strong>Next Reward:</strong> {stats.nextReward} (in {stats.nextRewardIn} tasks)</p>
-              <p>📈 <strong>Completion Rate:</strong> {completionRate}%</p>
-
-              <div className="w-full bg-gray-200 rounded-full h-4 mt-2">
-                <div
-                  className="bg-green-500 h-4 rounded-full text-xs text-right pr-2 text-white"
-                  style={{ width: `${completionRate}%` }}
-                >
-                  {completionRate}%
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="font-semibold text-lg text-indigo-600">🧩 User Stats</p>
-              <p>⭐ <strong>XP:</strong> {stats.xp} XP</p>
-              <p>🏆 <strong>Current Level:</strong> {stats.level}</p>
-            </div>
-          </div>
+      {/* Analytics Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
+        <div className="bg-blue-100 rounded-lg p-4 shadow">
+          <div className="text-sm">Tasks Completed</div>
+          <div className="text-2xl font-bold">{analyticsData.tasksCompleted}</div>
+        </div>
+        <div className="bg-green-100 rounded-lg p-4 shadow">
+          <div className="text-sm">Time Spent</div>
+          <div className="text-2xl font-bold">{Math.floor(analyticsData.timeSpent / 60)} mins</div>
+        </div>
+        <div className="bg-yellow-100 rounded-lg p-4 shadow">
+          <div className="text-sm">Current Streak</div>
+          <div className="text-2xl font-bold">{analyticsData.currentStreak} 🔥</div>
+        </div>
+        <div className="bg-purple-100 rounded-lg p-4 shadow col-span-2 sm:col-span-1">
+          <div className="text-sm">Points</div>
+          <div className="text-2xl font-bold">{analyticsData.leaderboardPoints}</div>
+        </div>
+        <div className="bg-pink-100 rounded-lg p-4 shadow col-span-2 sm:col-span-2">
+          <div className="text-sm">Badges</div>
+          <div className="text-md font-medium">{analyticsData.badges.join(", ")}</div>
         </div>
       </div>
+
+      {/* Login History */}
+      <div className="bg-gray-100 rounded-lg p-4 shadow">
+        <div className="text-sm mb-1">Login History</div>
+        <ul className="text-xs space-y-1">
+          {analyticsData.loginHistory.map((date, index) => (
+            <li key={index}>🗓️ {date}</li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Pie Chart */}
+      <div className="mt-5 flex justify-center">
+        <div className="w-60h-60">
+            <h3 className="text-lg font-semibold text-center mb-2">📈 Activity Breakdown</h3>
+            <canvas ref={chartRef} width={256} height={256} className="mx-auto" />
+            </div>
+            </div>
     </div>
   );
 };
