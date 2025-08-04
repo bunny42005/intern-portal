@@ -1,4 +1,8 @@
 import { useEffect, useState, useRef } from "react";
+import { Chart, PieController, ArcElement, Tooltip, Legend } from "chart.js";
+
+Chart.register(PieController, ArcElement, Tooltip, Legend);
+
 
 const Analytics = () => {
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -14,7 +18,8 @@ const Analytics = () => {
         setLoading(false);
 
         // Render pie chart
-        if (chartRef.current && window.Chart) {
+        if (chartRef.current) {
+ {
           const ctx = chartRef.current.getContext("2d");
 
           // Destroy old chart if exists
@@ -22,7 +27,7 @@ const Analytics = () => {
             chartInstanceRef.current.destroy();
           }
 
-          chartInstanceRef.current = new window.Chart(ctx, {
+          chartInstanceRef.current = new Chart(ctx, {(ctx, {
             type: "pie",
             data: {
               labels: ["Tasks", "Time Spent", "Points"],
@@ -100,7 +105,8 @@ const Analytics = () => {
       <div className="mt-5 flex justify-center">
         <div className="w-60h-60">
             <h3 className="text-lg font-semibold text-center mb-2">📈 Activity Breakdown</h3>
-            <canvas ref={chartRef} width={256} height={256} className="mx-auto" />
+            <canvas ref={chartRef} width={200} height={200} className="mx-auto" />
+
             </div>
             </div>
     </div>
