@@ -27,7 +27,7 @@ const Analytics = () => {
             chartInstanceRef.current.destroy();
           }
 
-          chartInstanceRef.current = new Chart(ctx, {(ctx, {
+          chartInstanceRef.current = new Chart(ctx, {
             type: "pie",
             data: {
               labels: ["Tasks", "Time Spent", "Points"],
